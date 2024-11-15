@@ -7,7 +7,7 @@
 
         // 채팅방 생성 요청 함수
         async function createChatRoom() {
-            const response = await fetch("http://localhost:8080/api/create", {
+            const response = await fetch("http://geugol.site/chat/api/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -31,7 +31,7 @@
         // WebSocket 연결 함수
         function connect(roomId,username) {
             // const username = "이은성";
-            socket = new WebSocket(`ws://localhost:8080/ws/chat?roomId=${roomId}&username=${username}`);
+            socket = new WebSocket(`ws://geugol.site/chat/ws/chat?roomId=${roomId}&username=${username}`);
 
             socket.onopen = function(event) {
                 console.log("WebSocket 연결 성공");
