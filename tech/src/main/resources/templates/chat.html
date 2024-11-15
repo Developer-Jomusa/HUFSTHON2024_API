@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>WebSocket Chat</title>
+    <script>
+        let socket;
+
+        // 채팅방 생성 요청 함수
+        async function createChatRoom() {
+            const response = await fetch("http://localhost:8080/api/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    roomName: "테스트 방",
+                    username : "이은성"
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const roomId = data.roomId;  // 생성된 채팅방 ID
+                const username = data.username;
+                connect(roomId,username);  // WebSocket 연결
+            } else {
+                console.error("채팅방 생성 실패:", response.statusText);
+            }
+        }
+
+        // WebSocket 연결 함수
+        function connect(roomId,username) {
+            // const username = "이은성";
+            socket = new WebSocket(`ws://localhost:8080/ws/chat?roomId=${roomId}&username=${username}`);
+
+            socket.onopen = function(event) {
+                console.log("WebSocket 연결 성공");
+            };
+
+            socket.onmessage = function(event) {
+                const chatArea = document.getElementById("chatArea");
+                chatArea.value += "서버 응답: " + event.data + "\n";
+            };
+
+            socket.onclose = function(event) {
+                console.log("WebSocket 연결 종료");
+            };
+
+            socket.onerror = function(error) {
+                console.error("WebSocket 오류:", error);
+            };
+        }
+
+        // 메시지 전송 함수
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value;
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(message);
+                messageInput.value = "";  // 메시지 전송 후 입력란 비우기
+            } else {
+                console.error("WebSocket이 열려 있지 않습니다.");
+            }
+        }
+
+        // 페이지 로드 시 채팅방 생성 요청
+        window.onload = createChatRoom;
+    </script>
+</head>
+<body>
+<h1>WebSocket 채팅</h1>
+<label for="chatArea"></label><textarea id="chatArea" rows="10" cols="50" readonly></textarea><br>
+<label for="messageInput"></label><input type="text" id="messageInput" placeholder="메시지를 입력하세요">
+<button onclick="sendMessage()">전송</button>
+</body>
+</html>
